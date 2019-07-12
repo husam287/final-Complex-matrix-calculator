@@ -1,0 +1,497 @@
+#include<iostream>
+#include<string>
+#include<cstddef>
+#include<sstream>
+#include<cstdlib>
+#include<math.h>
+
+using namespace std;
+class Complex{
+	float real; float img;
+public:
+	Complex(){
+		real = 0;
+		img = 0;
+
+	}
+	Complex(float r, float i){
+
+		real = r; img = i;
+	}
+
+
+	void get(string x){
+
+		real = 1; img = 1;
+		int f1 = x.find_first_of("+-", 1);
+		int f2 = x.find_first_of("i");
+		if (f2 == string::npos)
+
+			img = 0;
+		else if (f2 - f1 == 1)
+		{
+			if (x[f1] == '-')
+				img = -1;
+			else if(x[f1] == '+')
+				img = 1;
+		}
+		else
+		{
+			if (x[f1] == '-')
+				img = -1 * atof(x.substr(f1 + 1, (f2 - f1) - 1).c_str());
+			else if (x[f1] == '+')
+				img = atof(x.substr(f1 + 1, (f2 - f1) - 1).c_str());
+		}
+
+		if (f1 == string::npos)
+			real = 0;
+		
+	
+		if (real != 0)
+			real = atof(x.substr(0, f1).c_str());
+	}
+	float get_real()
+	{
+		return real;
+	}
+	float get_img()
+	{
+		return img;
+	}
+	void add(Complex c1, Complex c2){
+
+		real = c1.get_real() + c2.get_real();
+		img = c1.get_img() + c2.get_img();
+
+	}
+	void subtract(Complex c1, Complex c2)
+	{
+		real = c1.get_real() - c2.get_real();
+		img = c1.get_img() - c2.get_img();
+	}
+	void multiply(Complex c1, Complex c2){
+
+		real = c1.get_real()*c2.get_real() - c1.get_img()*c2.get_img();
+		img = c1.get_real()*c2.get_img() + c1.get_img()*c2.get_real();
+	}
+	string print(){
+		ostringstream ss;
+		ss << real;
+		if (img > 0)
+			ss << "+" << img << "i";
+		else if (img < 0)
+			ss << img << "i";
+		else if (img == 1)
+			ss << "i";
+		else if (img == -1)
+			ss << "-i";
+		return ss.str();
+
+
+	}
+	void clear(){
+
+		real = 0;
+		img = 0;
+
+
+		
+	}
+
+
+
+
+
+
+
+
+
+
+};
+int calc_row(string str)
+{
+	int counter = 0;
+	for (int i = 0; i < str.length(); i++)
+
+	if (str[i] == ';')
+		counter++;
+
+	return (counter + 1);
+}
+
+int calc_col(string str)
+{
+	int counter = 0;
+	for (int i = 0; i < str.length(); i++)
+
+	{
+		if (str[i] == ' ')
+			counter++;
+		else if (str[i] == ';')
+			break;
+	}
+	return (counter + 1);
+}
+
+
+
+string sum(string input1, string input2)//plus
+{
+	if ((calc_col(input1) == calc_col(input2)) && calc_row(input1) == calc_row(input2)){
+		Complex matrix1[100][100], matrix2[100][100], result[100][100];
+		size_t found = 0; int size_of_number = 0, flag = 0;
+		char process; //el operator
+
+		for (int i = 0; i < calc_row(input1); i++)
+		{
+			for (int j = 0; j < calc_col(input1); j++)
+			{
+				for (int k = found + 1; k < (input1.length() - 1); k++)
+				{
+
+					if (input1[k] == ';')
+					{
+						flag = 1; //34an 25ly el found yk4ef 3an elsemi colon
+						break;
+
+					}
+
+					else if (input1[k] != ' ')
+						size_of_number++;
+					else if (input1[k] == ' ')
+						break;
+				}
+				matrix1[i][j].get(input1.substr(found + 1, size_of_number));
+				if (flag == 1)
+					found = input1.find_first_of(";", found + 1);
+				else if (flag == 0)
+					found = input1.find_first_of(" ", found + 1);
+				size_of_number = 0;
+				flag = 0;
+			}
+		}
+		found = 0; //intialize for the second matrix
+		for (int i = 0; i < calc_row(input2); i++)
+		{
+			for (int j = 0; j < calc_col(input2); j++)
+			{
+				for (int k = found + 1; k < (input2.length() - 1); k++)
+				{
+
+					if (input2[k] == ';')
+					{
+						flag = 1; //34an 25ly el found yk4ef 3an elsemi colon
+						break;
+
+					}
+
+					else if (input2[k] != ' ')
+						size_of_number++;
+					else if (input2[k] == ' ')
+						break;
+				}
+				matrix2[i][j].get(input2.substr(found + 1, size_of_number));
+				if (flag == 1)
+					found = input2.find_first_of(";", found + 1);
+				else if (flag == 0)
+					found = input2.find_first_of(" ", found + 1);
+				size_of_number = 0;
+				flag = 0;
+			}
+		}
+		for (int i = 0; i < calc_row(input1); i++) //process here
+
+		for (int j = 0; j < calc_col(input1); j++)
+			result[i][j].add(matrix1[i][j], matrix2[i][j]);
+
+
+		ostringstream ss; //output conservation
+		string str;
+		ss << "[";
+		for (int i = 0; i < calc_row(input1); i++)
+		{
+			for (int j = 0; j < calc_col(input1); j++)
+			{
+				ss << result[i][j].print();
+
+				if (j < calc_col(input1) - 1)
+					ss << " ";
+			}
+			if (i < calc_row(input1) - 1)
+				ss << ";";
+		}
+		ss << "]";
+		return ss.str();
+	}
+	else
+		return "ERROR";
+}
+
+
+
+string substract(string input1, string input2)//minus
+{
+	if ((calc_col(input1) == calc_col(input2)) && calc_row(input1) == calc_row(input2)){
+		Complex matrix1[100][100], matrix2[100][100], result[100][100];
+		size_t found = 0; int size_of_number = 0, flag = 0;
+		char process; //el operator
+
+		for (int i = 0; i < calc_row(input1); i++)
+		{
+			for (int j = 0; j < calc_col(input1); j++)
+			{
+				for (int k = found + 1; k < (input1.length() - 1); k++)
+				{
+
+					if (input1[k] == ';')
+					{
+						flag = 1; //34an 25ly el found yk4ef 3an elsemi colon
+						break;
+
+					}
+
+					else if (input1[k] != ' ')
+						size_of_number++;
+					else if (input1[k] == ' ')
+						break;
+				}
+				matrix1[i][j].get(input1.substr(found + 1, size_of_number));
+				if (flag == 1)
+					found = input1.find_first_of(";", found + 1);
+				else if (flag == 0)
+					found = input1.find_first_of(" ", found + 1);
+				size_of_number = 0;
+				flag = 0;
+			}
+		}
+		found = 0; //intialize for the second matrix
+		for (int i = 0; i < calc_row(input2); i++)
+		{
+			for (int j = 0; j < calc_col(input2); j++)
+			{
+				for (int k = found + 1; k < (input2.length() - 1); k++)
+				{
+
+					if (input2[k] == ';')
+					{
+						flag = 1; //34an 25ly el found yk4ef 3an elsemi colon
+						break;
+
+					}
+
+					else if (input2[k] != ' ')
+						size_of_number++;
+					else if (input2[k] == ' ')
+						break;
+				}
+				matrix2[i][j].get(input2.substr(found + 1, size_of_number));
+				if (flag == 1)
+					found = input2.find_first_of(";", found + 1);
+				else if (flag == 0)
+					found = input2.find_first_of(" ", found + 1);
+				size_of_number = 0;
+				flag = 0;
+			}
+		}
+		for (int i = 0; i < calc_row(input1); i++) //process here
+
+		for (int j = 0; j < calc_col(input1); j++)
+			result[i][j].subtract(matrix1[i][j],matrix2[i][j]);
+
+
+		ostringstream ss; //output conservation
+		string str;
+		ss << "[";
+		for (int i = 0; i < calc_row(input1); i++)
+		{
+			for (int j = 0; j < calc_col(input1); j++)
+			{
+				ss << result[i][j].print();
+
+				if (j < calc_col(input1) - 1)
+					ss << " ";
+			}
+			if (i < calc_row(input1) - 1)
+				ss << ";";
+		}
+		ss << "]";
+		return ss.str();
+	}
+	else
+		return "ERROR";
+}
+
+
+string multiply(string input1, string input2)
+{
+
+	Complex matrix1[100][100], matrix2[100][100], result[100][100] ;
+	size_t found = 0; int size_of_number = 0, flag = 0;
+	char process; //el operator
+	if (calc_col(input1) == calc_row(input2)){
+		for (int i = 0; i < calc_row(input1); i++)
+		{
+			for (int j = 0; j < calc_col(input1); j++)
+			{
+				for (int k = found + 1; k < (input1.length() - 1); k++)
+				{
+
+					if (input1[k] == ';')
+					{
+						flag = 1; //34an 25ly el found yk4ef 3an elsemi colon
+						break;
+
+					}
+
+					else if (input1[k] != ' ')
+						size_of_number++;
+					else if (input1[k] == ' ')
+						break;
+				}
+				matrix1[i][j].get(input1.substr(found + 1, size_of_number));
+				if (flag == 1)
+					found = input1.find_first_of(";", found + 1);
+				else if (flag == 0)
+					found = input1.find_first_of(" ", found + 1);
+				size_of_number = 0;
+				flag = 0;
+			}
+		}
+		found = 0; //intialize for the second matrix
+		for (int i = 0; i < calc_row(input2); i++)
+		{
+			for (int j = 0; j < calc_col(input2); j++)
+			{
+				for (int k = found + 1; k < (input2.length() - 1); k++)
+				{
+
+					if (input2[k] == ';')
+					{
+						flag = 1; //34an 25ly el found yk4ef 3an elsemi colon
+						break;
+
+					}
+
+					else if (input2[k] != ' ')
+						size_of_number++;
+					else if (input2[k] == ' ')
+						break;
+				}
+				matrix2[i][j].get(input2.substr(found + 1, size_of_number));
+				if (flag == 1)
+					found = input2.find_first_of(";", found + 1);
+				else if (flag == 0)
+					found = input2.find_first_of(" ", found + 1);
+				size_of_number = 0;
+				flag = 0;
+			}
+		}
+		//process here
+		Complex temp1, temp2;
+		for (int r = 0; r < calc_row(input1); r++)//el row sabt bta3 1
+		{
+			for (int c = 0; c < calc_col(input2); c++)//el col sabta bta3 2
+
+			{
+				for (int i = 0; i < calc_col(input1); i++)//el col btt8yar bta3 1
+
+
+				{
+					temp1.multiply(matrix1[r][i], matrix2[i][c]);
+					result[r][c].add(temp2, temp1);
+					temp2 = result[r][c];
+
+				}
+
+				temp2.clear();
+				temp1.clear();
+			}
+
+		}
+
+
+		ostringstream ss; //output conservation
+		string str;
+		ss << "[";
+		for (int i = 0; i < calc_row(input1); i++)
+		{
+			for (int j = 0; j < calc_col(input2); j++)
+			{
+				ss << result[i][j].print();
+
+				if (j < calc_col(input2) - 1)
+					ss << " ";
+			}
+			if (i < calc_row(input1) - 1)
+				ss << ";";
+		}
+		ss << "]";
+		return ss.str();
+	}
+	else
+		return "ERROR";
+
+
+}
+
+
+
+
+
+int main(){
+
+	string input1, input2;
+	char process; //el operator
+
+	getline(cin, input1);
+	
+	cin >> process;
+
+	switch (process)
+	{
+
+	case '+':
+	{			cin.ignore();
+	getline(cin, input2);
+	
+	cout << sum(input1, input2);
+	break;
+	}
+	case '-':
+	{
+				cin.ignore();
+				getline(cin, input2);
+				
+				cout << substract(input1, input2);
+				break;
+	}
+	case'*':
+	{
+
+			   cin.ignore();
+			   getline(cin, input2);
+			   
+			   cout << multiply(input1, input2);
+			   break;
+
+	}
+	
+	default:
+	{
+
+			   cout << "ERROR";
+			   break;
+	}
+
+
+
+
+	}
+
+
+
+
+
+
+	return 0;
+}
